@@ -1,5 +1,10 @@
 # Release Notes for Squash
 
+## 1.0.1 - 2026-06-04
+
+### Changed
+- File sizes now display with one decimal place (e.g. `777.4 KB`) consistently across the report utility's stats, Size and Saved columns, the threshold text, and the per-asset **Compressed (%)** metadata row.
+
 ## 1.0.0 - 2026-06-04
 
 ### Added

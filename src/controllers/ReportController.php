@@ -64,18 +64,18 @@ class ReportController extends Controller
 
             // Size (before → after for compressed).
             if ($isCompressed && (int) $log->originalSize > 0) {
-                $size = Html::encode($formatter->asShortSize($log->originalSize))
+                $size = Html::encode($formatter->asShortSize($log->originalSize, 1))
                     . ' <span class="light">&rarr;</span> '
-                    . '<strong style="color: var(--enabled-color, #1f9e57);">' . Html::encode($formatter->asShortSize($asset->size)) . '</strong>';
+                    . '<strong style="color: var(--enabled-color, #1f9e57);">' . Html::encode($formatter->asShortSize($asset->size, 1)) . '</strong>';
             } else {
-                $size = Html::encode($formatter->asShortSize($asset->size));
+                $size = Html::encode($formatter->asShortSize($asset->size, 1));
             }
 
             // Saved.
             if ($isCompressed && (int) $log->originalSize > 0) {
                 $saved = max(0, (int) $log->originalSize - (int) $log->newSize);
                 $percent = round($saved / (int) $log->originalSize * 100, 1);
-                $savedHtml = Html::encode($formatter->asShortSize($saved)) . ' <span class="light">(' . $percent . '%)</span>';
+                $savedHtml = Html::encode($formatter->asShortSize($saved, 1)) . ' <span class="light">(' . $percent . '%)</span>';
             } elseif ($isSkipped) {
                 $savedHtml = '<span class="light">' . Craft::t('squash', 'Already optimised') . '</span>';
             } else {

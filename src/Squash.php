@@ -470,7 +470,7 @@ class Squash extends Plugin
                 : 0;
             return Html::encode(Craft::t('squash', '{percent}% ({size} saved)', [
                 'percent' => $percent,
-                'size' => $formatter->asShortSize($saved),
+                'size' => $formatter->asShortSize($saved, 1),
             ]));
         };
     }

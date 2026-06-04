@@ -43,7 +43,7 @@
     <h2>{{ '{name} Assets'|t('squash', { name: settings.pluginName }) }}</h2>
     <p class="light">
         {{ 'Squash your biggest assets to save space. Anything over {size} shows up here. Change the limit in {link}.'|t('squash', {
-            size: tag('strong', { text: formatter.asShortSize(threshold) }),
+            size: tag('strong', { text: formatter.asShortSize(threshold, 1) }),
             link: tag('a', { text: 'settings'|t('squash'), href: cpUrl('squash/settings') }),
         })|raw }}
     </p>
@@ -51,7 +51,7 @@
 
 <div class="squash-stats">
     <div class="squash-stat squash-stat--saved">
-        <div class="squash-stat__value">{{ formatter.asShortSize(stats.totalSaved) }}</div>
+        <div class="squash-stat__value">{{ formatter.asShortSize(stats.totalSaved, 1) }}</div>
         <div class="squash-stat__label">{{ 'Saved so far'|t('squash') }}</div>
     </div>
     <div class="squash-stat">
