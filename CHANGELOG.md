@@ -1,6 +1,6 @@
 # Release Notes for Squash
 
-## 0.1.0 - Unreleased
+## 1.0.0 - 2026-06-04
 
 ### Added
 - Pluggable compression drivers: external API (TinyPNG / ShortPixel / Kraken.io), native binaries (jpegoptim, pngquant, gifsicle, svgo), and a zero-dependency Imagick/GD fallback.

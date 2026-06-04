@@ -6,6 +6,8 @@ We've all been there: a client uploads a 15MB image (plus a few more for good me
 
 Squash has your back. It compresses your assets for you, automatically on upload or whenever you like, shrinking JPEG, PNG, GIF, SVG and PDF files. Every original is safely stored as a backup so you can restore it in a click, and a built-in report shows off just how much you've saved.
 
+<img src="https://raw.githubusercontent.com/bymayo/craft-squash/craft-5/resources/screenshot.png" width="850">
+
 ## Features
 
 - **Choose your engine**: API (TinyPNG / ShortPixel / Kraken.io), native binaries (jpegoptim, pngquant, gifsicle, svgo, Ghostscript), or a zero-dependency Imagick/GD fallback

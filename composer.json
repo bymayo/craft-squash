@@ -1,7 +1,7 @@
 {
   "name": "bymayo/squash",
-  "description": "Compress images on upload or on demand, restore originals from backup, and report on oversized assets.",
-  "version": "0.1.0",
+  "description": "Compress images and PDFs on upload or on demand, restore originals from backup, and report on your savings.",
+  "version": "1.0.0",
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {
