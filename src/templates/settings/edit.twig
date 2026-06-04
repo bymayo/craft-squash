@@ -93,7 +93,7 @@
             instructions: 'Only auto-compress uploads at least this size.'|t('squash'),
             id: 'autoThresholdPreset',
             name: 'autoThresholdPreset',
-            options: autoPresets|merge([{ label: 'Custom…'|t('squash'), value: 'custom' }]),
+            options: autoPresets|merge([{ label: 'Custom'|t('squash'), value: 'custom' }]),
             value: autoIsPreset ? autoCurrent : 'custom',
         }) }}
 
@@ -129,7 +129,7 @@
             instructions: 'Assets larger than this are flagged for compression in the [report utility]({url}).'|t('squash', { url: cpUrl('utilities/squash-assets') }),
             id: 'reportThresholdPreset',
             name: 'reportThresholdPreset',
-            options: reportPresets|merge([{ label: 'Custom…'|t('squash'), value: 'custom' }]),
+            options: reportPresets|merge([{ label: 'Custom'|t('squash'), value: 'custom' }]),
             value: reportIsPreset ? reportCurrent : 'custom',
         }) }}
 
