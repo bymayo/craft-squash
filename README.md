@@ -13,15 +13,9 @@ Squash has your back. It compresses your assets for you, automatically on upload
 - **Compress anywhere**: automatically on upload, in bulk from the Assets index, or per-asset from its action menu
 - **Safe by default**: backs up the original first, only writes back if it's actually smaller, and never re-compresses an already-optimised file
 - **One-click restore**: roll any asset back to its original, which removes the backup and lets it be compressed again
-- **Report utility**: *All / Compressed / Needs compression* views with search, pagination, savings stats, and bulk actions
-- **At a glance**: a Compressed column + filter on the Assets index, plus *Compressed at / by / %* in each asset's metadata
+- **Report utility**: search your assets, see your savings stats, and compress in bulk
+- **At a glance**: see what's been compressed right in the Assets index, and the savings, date and who did it on each asset
 - **Permissions**: control who can compress and who can restore, per user group
-
-## Why not ImageOptimize or Imager X?
-
-They solve a different problem. ImageOptimize and Imager X optimise **transforms** — the resized variants you generate in templates — and leave your original uploads untouched. Squash optimises the **originals in your asset library**, which means lower storage and backup costs, lighter direct downloads, and a leaner DAM — and it covers files transforms don't, like PDFs and downloadable originals. Every original is backed up so you can restore it.
-
-They're complementary: use a transform plugin for front-end delivery, and Squash to keep the library itself lean.
 
 ## Install
 
@@ -41,9 +35,17 @@ Each compression engine also has its own requirements, depending on which you ch
 
 Pick the compression engine that suits your host:
 
-- **API**: a TinyPNG / ShortPixel / Kraken.io API key (Kraken.io also needs a secret).
-- **Binaries**: the relevant CLI tools (`jpegoptim`, `pngquant`, `gifsicle`, `svgo`, and `gs` for PDFs) plus shell access.
-- **Imagick / GD**: the `imagick` or `gd` PHP extension (present on virtually every host).
+- **Binaries**: shell access plus the command-line tool for each format you use:
+  - `jpegoptim` (JPEG)
+  - `pngquant` (PNG)
+  - `gifsicle` (GIF)
+  - `svgo` (SVG — optional; falls back to a built-in minifier)
+  - `gs` / Ghostscript (PDF)
+- **Imagick / GD**: nothing extra — uses the `imagick` or `gd` PHP extension that Craft already requires.
+- **API**: an API key for your chosen service:
+  - [TinyPNG](https://tinypng.com/developers)
+  - [ShortPixel](https://shortpixel.com/api-docs)
+  - [Kraken.io](https://kraken.io/account/api-credentials)
 
 The **Drivers → Server support** table in settings shows what's detected on your server.
 
@@ -96,6 +98,13 @@ Every run finishes in one of two states:
 
 Both count as "compressed", so the Compressed column and filter include either.
 
+## The Compressed column & filter
+
+Squash adds a **Compressed** column and filter to the Assets index so you can see and target what's been done.
+
+- **Column**: enable **Compressed** from the column settings (the gear at the end of the table header). A green tick means compressed, a grey tick means already optimised.
+- **Filter**: open the Assets filter bar and add the **Compressed** condition to show only processed assets, or toggle it off to find everything that still needs doing.
+
 ## Backups & restoring
 
 With **Keep backups** on, the original is copied to a backup location before Squash overwrites the asset — alongside it under a configurable `_squash-backups/` folder, or on a dedicated filesystem. Backups are written straight to the filesystem and aren't shown in the control panel (so they're never re-compressed). 
@@ -112,6 +121,12 @@ Per user group under **Settings → Users → (group) → Permissions**:
 - **Restore assets** (`squash-restoreAssets`)
 
 Report-utility access is Craft's standard per-utility permission (under **Utilities**). Plugin settings are admin-only.
+
+## Why not ImageOptimize or Imager X?
+
+They actually solve a different problem. ImageOptimize and Imager X optimise **transforms** (the resized variants you output in templates) and leave your original uploads untouched. Squash optimises the **originals in your asset library**, so you save on storage and backups, and keep file downloads light. It also handles files transforms don't, like PDFs and other downloadable files.
+
+So they pair up nicely: let a transform plugin handle front-end delivery, and let Squash keep the library itself lean.
 
 ## Support
 
