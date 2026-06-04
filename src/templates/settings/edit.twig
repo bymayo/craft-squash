@@ -69,7 +69,7 @@
         {# On upload #}
         {{ forms.lightswitchField({
             label: 'Compress on upload'|t('squash'),
-            instructions: 'Automatically queue newly uploaded assets for compression.'|t('squash'),
+            instructions: 'Compress new uploads automatically.'|t('squash'),
             id: 'compressOnUpload',
             name: 'settings[compressOnUpload]',
             on: settings.compressOnUpload,
@@ -186,7 +186,7 @@
 
         {{ forms.selectField({
             label: 'Backup filesystem'|t('squash'),
-            instructions: 'Where to store original backups. Backups are written straight to the filesystem and aren’t shown in the control panel’s asset browser (so they’re never treated as assets or re-compressed).'|t('squash'),
+            instructions: 'Where to store original backups. Written straight to the filesystem, so they don’t appear in the control panel.'|t('squash'),
             id: 'backupFsHandle',
             name: 'settings[backupFsHandle]',
             value: settings.backupFsHandle,
@@ -196,7 +196,7 @@
 
         {{ forms.textField({
             label: 'Backup folder'|t('squash'),
-            instructions: 'Folder (on the backup filesystem) that backups are stored in, mirroring each asset’s own folder structure.'|t('squash'),
+            instructions: 'Folder backups are stored in, mirroring each asset’s folder structure.'|t('squash'),
             id: 'backupFolder',
             name: 'settings[backupFolder]',
             value: settings.backupFolder,
@@ -206,7 +206,7 @@
         {{ forms.textField({
             type: 'number',
             label: 'Keep backups for (days)'|t('squash'),
-            instructions: 'Automatically delete backups older than this during Craft’s garbage collection. Restoring an asset is no longer possible once its backup is pruned. 0 = keep forever.'|t('squash'),
+            instructions: 'Auto-delete backups older than this (a pruned asset can no longer be restored). 0 = keep forever.'|t('squash'),
             id: 'backupRetentionDays',
             name: 'settings[backupRetentionDays]',
             value: settings.backupRetentionDays,
@@ -336,7 +336,7 @@
 
         {{ forms.textField({
             label: 'PNG quality'|t('squash'),
-            instructions: 'A “min-max” range for pngquant (e.g. 65-80). The Imagick/GD fallback uses the upper bound.'|t('squash'),
+            instructions: 'A “min-max” range for pngquant (e.g. 65-80).'|t('squash'),
             id: 'pngQuality',
             name: 'settings[pngQuality]',
             value: settings.pngQuality,
@@ -360,7 +360,7 @@
 
         {{ forms.selectField({
             label: 'PDF quality'|t('squash'),
-            instructions: 'PDFs always use Ghostscript (regardless of the image driver). “Screen” is smallest (72 dpi); “Printer”/“Prepress” keep more quality. Requires the Ghostscript (gs) binary.'|t('squash'),
+            instructions: 'Ghostscript preset (lower = smaller).'|t('squash'),
             id: 'pdfQuality',
             name: 'settings[pdfQuality]',
             value: settings.pdfQuality,
