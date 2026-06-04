@@ -25,7 +25,8 @@ class SquashReport extends Utility
 
     public static function icon(): ?string
     {
-        return 'compress';
+        // The plugin's own outline icon (src/icon-outline.svg).
+        return dirname(__DIR__) . '/icon-outline.svg';
     }
 
     public static function contentHtml(): string
