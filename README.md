@@ -1,8 +1,8 @@
-# Squash for Craft CMS
+# Squash for Craft CMS 5
 
 <img src="https://raw.githubusercontent.com/bymayo/craft-squash/craft-5/src/icon.svg" width="70">
 
-Compress your asset library automatically on upload or on demand. Squash shrinks JPEG, PNG, GIF, SVG and PDF files with your choice of engine, keeps a backup of every original so you can restore it in one click, and tracks your savings from a built-in report.
+We've all been there: the client's uploaded a 15MB hero image — amongst plenty of others — and quietly filled the storage. Squash compresses your asset library, automatically on upload or on demand, shrinking JPEG, PNG, GIF, SVG and PDF files with your choice of engine. It keeps a backup of every original so you can restore in one click, and tracks your savings from a built-in report.
 
 ## Features
 
@@ -18,6 +18,12 @@ Compress your asset library automatically on upload or on demand. Squash shrinks
 - **Granular permissions**: separate compress / restore controls per user group
 - **Diagnostics**: a server-support table showing which tools are available, and a dedicated `squash.log`
 - **Extensible**: register your own compression drivers via an event
+
+## Why not ImageOptimize or Imager X?
+
+They solve a different problem. ImageOptimize and Imager X optimise **transforms** — the resized variants you generate in templates — and leave your original uploads untouched. Squash optimises the **originals in your asset library**, which means lower storage and backup costs, lighter direct downloads, and a leaner DAM — and it covers files transforms don't, like PDFs and downloadable originals. Every original is backed up so you can restore it.
+
+They're complementary: use a transform plugin for front-end delivery, and Squash to keep the library itself lean.
 
 ## Requirements
 
