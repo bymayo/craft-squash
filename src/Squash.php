@@ -36,6 +36,7 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\log\MonologTarget;
+use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\web\UrlManager;
@@ -331,6 +332,15 @@ class Squash extends Plugin
             Element::EVENT_AFTER_SAVE,
             function(ModelEvent $event) {
                 $this->maybeQueueOnUpload($event);
+            }
+        );
+
+        // Prune expired backups during Craft's garbage collection.
+        Event::on(
+            Gc::class,
+            Gc::EVENT_RUN,
+            function() {
+                $this->squasher->pruneBackups();
             }
         );
 

@@ -19,7 +19,7 @@
 
 {% set tabs = {
     general: { label: 'General'|t('squash'), url: '#settings-general' },
-    engine: { label: 'Image driver'|t('squash'), url: '#settings-engine' },
+    engine: { label: 'Drivers'|t('squash'), url: '#settings-engine' },
     formats: { label: 'Formats & quality'|t('squash'), url: '#settings-formats' },
 } %}
 
@@ -126,7 +126,7 @@
 
         {{ forms.selectField({
             label: 'Report threshold'|t('squash'),
-            instructions: 'Assets larger than this are flagged for compression in the report utility.'|t('squash'),
+            instructions: 'Assets larger than this are flagged for compression in the [report utility]({url}).'|t('squash', { url: cpUrl('utilities/squash-assets') }),
             id: 'reportThresholdPreset',
             name: 'reportThresholdPreset',
             options: reportPresets|merge([{ label: 'Custom…'|t('squash'), value: 'custom' }]),
@@ -201,6 +201,18 @@
             name: 'settings[backupFolder]',
             value: settings.backupFolder,
             errors: settings.getErrors('backupFolder'),
+        }) }}
+
+        {{ forms.textField({
+            type: 'number',
+            label: 'Keep backups for (days)'|t('squash'),
+            instructions: 'Automatically delete backups older than this during Craft’s garbage collection. Restoring an asset is no longer possible once its backup is pruned. 0 = keep forever.'|t('squash'),
+            id: 'backupRetentionDays',
+            name: 'settings[backupRetentionDays]',
+            value: settings.backupRetentionDays,
+            size: 6,
+            min: 0,
+            errors: settings.getErrors('backupRetentionDays'),
         }) }}
     </div>
 

@@ -345,6 +345,56 @@ class Squasher extends Component
     }
 
     /**
+     * Delete backups older than the configured retention window, clearing the
+     * backup flag/path on their log rows (the row stays for stats; only Restore
+     * goes away). No-op when retention is 0 (keep forever). Returns the count.
+     */
+    public function pruneBackups(): int
+    {
+        $days = (int) Squash::getInstance()->getSettings()->backupRetentionDays;
+        if ($days <= 0) {
+            return 0;
+        }
+
+        $cutoff = (new \DateTime('now', new \DateTimeZone('UTC')))
+            ->modify("-{$days} days")
+            ->format('Y-m-d H:i:s');
+
+        $rows = CompressionLogRecord::find()
+            ->where(['hasBackup' => true])
+            ->andWhere(['<', 'dateCreated', $cutoff])
+            ->all();
+
+        $pruned = 0;
+        foreach ($rows as $row) {
+            try {
+                $fs = $this->resolveFs($row->backupFs);
+                if ($row->backupPath && $fs && $fs->fileExists($row->backupPath)) {
+                    $fs->deleteFile($row->backupPath);
+                } elseif ($row->backupPath && !$fs) {
+                    // Backup filesystem is gone — can't safely confirm deletion.
+                    continue;
+                }
+            } catch (\Throwable $e) {
+                Craft::warning('Squash could not delete expired backup for asset ' . $row->assetId . ': ' . $e->getMessage(), 'squash');
+                continue;
+            }
+
+            $row->hasBackup = false;
+            $row->backupPath = null;
+            $row->backupFs = null;
+            $row->save(false);
+            $pruned++;
+        }
+
+        if ($pruned > 0) {
+            Craft::info("Pruned {$pruned} expired backup(s).", 'squash');
+        }
+
+        return $pruned;
+    }
+
+    /**
      * Copy the original to the backup filesystem. Never overwrites an existing
      * backup (the first one is the true original; later runs compress an
      * already-compressed file).

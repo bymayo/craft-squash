@@ -61,6 +61,8 @@ Both count as "processed", so the Compressed column and filter match either.
 
 With **Keep backups** on (the default), the original is copied to a backup location before Squash overwrites the asset — alongside it under a configurable `_squash-backups/` folder, or on a dedicated filesystem. Backups are written straight to the filesystem and aren't shown in the control panel (so they're never re-compressed). Use **Restore original file** to roll an asset back; restoring deletes the backup and clears its history so it can be compressed again.
 
+Backups older than **Keep backups for** days are pruned automatically during Craft's garbage collection (default 90; `0` = keep forever) — once pruned, that asset can no longer be restored. Run `php craft squash/backups/prune` to force a clean-up.
+
 ## Permissions
 
 Per user group under **Settings → Users → (group) → Permissions**:

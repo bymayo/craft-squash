@@ -68,6 +68,9 @@ class Settings extends Model
     /** Folder name backups are stored in (relative to the backup filesystem). */
     public string $backupFolder = '_squash-backups';
 
+    /** Auto-delete backups older than this many days during GC. 0 = keep forever. */
+    public int $backupRetentionDays = 90;
+
     /** JPEG quality, 1-100. */
     public int $jpegQuality = 82;
 
@@ -127,7 +130,7 @@ class Settings extends Model
         $rules[] = [['apiService'], 'in', 'range' => [self::API_TINYPNG, self::API_SHORTPIXEL, self::API_KRAKEN]];
         $rules[] = [['apiKey', 'apiSecret', 'backupFsHandle', 'backupFolder', 'pngQuality'], 'string'];
         $rules[] = [['compressOnUpload', 'keepBackups'], 'boolean'];
-        $rules[] = [['autoUploadThreshold', 'reportThreshold'], 'integer', 'min' => 0];
+        $rules[] = [['autoUploadThreshold', 'reportThreshold', 'backupRetentionDays'], 'integer', 'min' => 0];
         $rules[] = [['jpegQuality'], 'integer', 'min' => 1, 'max' => 100];
         $rules[] = [['gifOptimizationLevel'], 'integer', 'min' => 1, 'max' => 3];
         $rules[] = [['pdfQuality'], 'in', 'range' => self::PDF_PRESETS];

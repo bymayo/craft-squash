@@ -11,6 +11,7 @@
 - Per-asset **Compress** / **Restore** items in an asset's action (•••) menu, shown only when relevant — Compress is hidden once an asset is compressed, and Restore is hidden until a backup exists.
 - Original-file backups before every overwrite, stored alongside the asset or on a chosen Craft filesystem, under a configurable backup folder name.
 - One-click **Restore** that puts the original back, then deletes the backup file and clears the asset's log rows so it can be compressed again.
+- Backup retention: backups older than a configurable window (default 90 days; 0 = keep forever) are pruned during Craft's garbage collection, with a `squash/backups/prune` console command to force it.
 - "Skip if larger" guard so a compressed result never replaces a smaller original.
 - Never re-compresses an already-compressed asset (avoids cumulative quality loss); mixed bulk selections only compress the not-yet-compressed ones, with the index actions disabling themselves accordingly.
 - Compression state on the Assets index: an optional **Compressed** column (green check when space was saved, grey check when already optimised) and a **Compressed** filter that matches any processed asset (compressed or already optimised).

@@ -53,6 +53,10 @@ return [
     // Folder name backups are stored in (relative to the backup filesystem).
     'backupFolder' => '_squash-backups',
 
+    // Auto-delete backups older than this many days during Craft's garbage
+    // collection. 0 = keep forever.
+    'backupRetentionDays' => 90,
+
     // JPEG quality (1-100). Higher = better quality, larger file.
     'jpegQuality' => 82,
 

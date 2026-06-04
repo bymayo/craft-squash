@@ -52,7 +52,7 @@ class Reporter extends Component
             $formatCond,
         ];
 
-        $query = Asset::find()->orderBy(['assets.size' => SORT_DESC]);
+        $query = Asset::find()->orderBy(['elements.dateCreated' => SORT_DESC]);
 
         if ($view === 'compressed') {
             $query->andWhere(['elements.id' => $compressedSub]);
