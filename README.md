@@ -2,7 +2,7 @@
 
 # Squash for Craft CMS 5
 
-We've all been there: a client uploads a 15MB image (plus a few more for good measure) and quietly fills up the storage.
+We've all been there: not everyone optimises their images before uploading. A client drags in a 15MB photo straight off their phone (plus a few more for good measure) uploads it to the CMS and quietly fills up the storage.
 
 Squash has your back. It compresses your assets for you, automatically on upload or whenever you like, shrinking JPEG, PNG, GIF, SVG and PDF files. Every original is safely stored as a backup so you can restore it in a click, and a built-in report shows off just how much you've saved.
 
