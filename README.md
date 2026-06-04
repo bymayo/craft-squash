@@ -113,6 +113,8 @@ Use **Restore original file** to roll an asset back; restoring deletes the backu
 
 Backups older than **Keep backups for** days are pruned automatically during Craft's garbage collection (default 90; `0` = keep forever) — once pruned, that asset can no longer be restored. Run `php craft squash/backups/prune` to force a clean-up.
 
+Permanently deleting an asset (from the trash) also deletes its backup and clears its records, so nothing is left behind.
+
 ## Permissions
 
 Per user group under **Settings → Users → (group) → Permissions**:

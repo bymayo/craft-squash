@@ -345,6 +345,69 @@ class Squasher extends Component
     }
 
     /**
+     * Delete an asset's backup file(s) and all of its log rows — used when an
+     * asset is permanently deleted, so nothing is left behind.
+     */
+    public function forgetAsset(int $assetId): void
+    {
+        foreach (CompressionLogRecord::find()->where(['assetId' => $assetId, 'hasBackup' => true])->all() as $row) {
+            if (!$row->backupPath) {
+                continue;
+            }
+            try {
+                $fs = $this->resolveFs($row->backupFs);
+                if ($fs && $fs->fileExists($row->backupPath)) {
+                    $fs->deleteFile($row->backupPath);
+                }
+            } catch (\Throwable $e) {
+                Craft::warning('Squash could not delete backup for deleted asset ' . $assetId . ': ' . $e->getMessage(), 'squash');
+            }
+        }
+
+        CompressionLogRecord::deleteAll(['assetId' => $assetId]);
+    }
+
+    /**
+     * Clean up records for assets that no longer exist (permanently deleted /
+     * removed by garbage collection). Returns the number of assets cleared.
+     */
+    public function pruneOrphans(): int
+    {
+        $assetIds = (new Query())
+            ->select(['assetId'])
+            ->distinct()
+            ->from('{{%squash_log}}')
+            ->column();
+
+        if (empty($assetIds)) {
+            return 0;
+        }
+
+        // Trashed assets still have an elements row (with dateDeleted); only
+        // hard-deleted assets are gone entirely, so those are the orphans.
+        $existing = (new Query())
+            ->select(['id'])
+            ->from('{{%elements}}')
+            ->where(['id' => $assetIds])
+            ->column();
+
+        $orphans = array_diff(
+            array_map('intval', $assetIds),
+            array_map('intval', $existing),
+        );
+
+        foreach ($orphans as $assetId) {
+            $this->forgetAsset((int) $assetId);
+        }
+
+        if ($orphans) {
+            Craft::info('Cleared Squash records for ' . count($orphans) . ' deleted asset(s).', 'squash');
+        }
+
+        return count($orphans);
+    }
+
+    /**
      * Delete backups older than the configured retention window, clearing the
      * backup flag/path on their log rows (the row stays for stats; only Restore
      * goes away). No-op when retention is 0 (keep forever). Returns the count.

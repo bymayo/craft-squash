@@ -335,12 +335,27 @@ class Squash extends Plugin
             }
         );
 
-        // Prune expired backups during Craft's garbage collection.
+        // Clean up backups + log rows when an asset is permanently deleted
+        // (from the trash). Soft deletes/trashing are left alone.
+        Event::on(
+            Asset::class,
+            Element::EVENT_AFTER_DELETE,
+            function(Event $event) {
+                $asset = $event->sender;
+                if ($asset instanceof Asset && $asset->id && $asset->hardDelete) {
+                    $this->squasher->forgetAsset((int) $asset->id);
+                }
+            }
+        );
+
+        // During garbage collection: prune expired backups, and clear records
+        // for assets that have since been permanently deleted.
         Event::on(
             Gc::class,
             Gc::EVENT_RUN,
             function() {
                 $this->squasher->pruneBackups();
+                $this->squasher->pruneOrphans();
             }
         );
 
