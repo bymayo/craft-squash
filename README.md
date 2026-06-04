@@ -1,6 +1,6 @@
-# Squash for Craft CMS 5
-
 <img src="https://raw.githubusercontent.com/bymayo/craft-squash/craft-5/src/icon.svg" width="70">
+
+# Squash for Craft CMS 5
 
 We've all been there: a client uploads a 15MB image (plus a few more for good measure) and quietly fills up the storage.
 
