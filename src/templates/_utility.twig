@@ -1,0 +1,144 @@
+{# @var plugin \bymayo\squash\Squash #}
+{# @var settings \bymayo\squash\models\Settings #}
+{# @var assets \craft\elements\Asset[] #}
+{# @var logState \bymayo\squash\records\CompressionLogRecord[] #}
+{# @var stats array #}
+{# @var view string #}
+
+{% set formatter = craft.app.formatter %}
+{% set redirect = 'utilities/squash-assets?view=' ~ view %}
+
+{% do craft.app.view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') %}
+
+{% css %}
+    .squash-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .squash-stat {
+        border: 1px solid var(--hairline-color, #e3e5e8);
+        border-radius: var(--large-border-radius, 5px);
+        background: var(--gray-050, #fbfcfe);
+        padding: 16px 18px;
+    }
+    .squash-stat__value {
+        font-size: 28px;
+        line-height: 1.1;
+        font-weight: 500;
+        color: var(--text-color, #3f4d5a);
+    }
+    .squash-stat--saved .squash-stat__value {
+        color: var(--enabled-color, #1f9e57);
+    }
+    .squash-stat__label {
+        margin-top: 4px;
+        color: var(--medium-text-color, #606d7b);
+        font-size: 13px;
+    }
+{% endcss %}
+
+<div style="margin-bottom:24px;">
+    <h2>{{ '{name} Assets'|t('squash', { name: settings.pluginName }) }}</h2>
+    <p class="light">
+        {{ 'Squash your biggest assets to save space. Anything over {size} shows up here. Change the limit in {link}.'|t('squash', {
+            size: tag('strong', { text: formatter.asShortSize(threshold) }),
+            link: tag('a', { text: 'settings'|t('squash'), href: cpUrl('squash/settings') }),
+        })|raw }}
+    </p>
+</div>
+
+<div class="squash-stats">
+    <div class="squash-stat squash-stat--saved">
+        <div class="squash-stat__value">{{ formatter.asShortSize(stats.totalSaved) }}</div>
+        <div class="squash-stat__label">{{ 'Saved so far'|t('squash') }}</div>
+    </div>
+    <div class="squash-stat">
+        <div class="squash-stat__value">{{ stats.assetsCompressed }}</div>
+        <div class="squash-stat__label">{{ 'Assets compressed'|t('squash') }}</div>
+    </div>
+    <div class="squash-stat">
+        <div class="squash-stat__value">{{ stats.avgPercent }}%</div>
+        <div class="squash-stat__label">{{ 'Average reduction'|t('squash') }}</div>
+    </div>
+</div>
+
+{% if canCompress and pendingCount %}
+    <form method="post" style="margin-bottom:16px;">
+        {{ csrfInput() }}
+        <input type="hidden" name="action" value="squash/compress/queue">
+        <input type="hidden" name="all" value="1">
+        {{ redirectInput(redirect) }}
+        <button type="submit" class="btn submit">
+            {{ 'Compress {n, plural, =1{1 asset} other{# assets}} over the threshold'|t('squash', { n: pendingCount }) }}
+        </button>
+    </form>
+{% endif %}
+
+<hr style="margin:24px -24px; border:0; border-top:1px solid var(--hairline-color, #e3e5e8);">
+
+{# View toggle #}
+<div class="btngroup" style="margin-bottom:16px;">
+    <a href="{{ cpUrl('utilities/squash-assets', { view: 'all' }) }}" class="btn{{ view == 'all' ? ' active' : '' }}">
+        {{ 'All'|t('squash') }} <span class="badge" style="margin-left:7px;">{{ allCount }}</span>
+    </a>
+    <a href="{{ cpUrl('utilities/squash-assets', { view: 'compressed' }) }}" class="btn{{ view == 'compressed' ? ' active' : '' }}">
+        {{ 'Compressed'|t('squash') }} <span class="badge" style="margin-left:7px;">{{ compressedCount }}</span>
+    </a>
+    <a href="{{ cpUrl('utilities/squash-assets', { view: 'pending' }) }}" class="btn{{ view == 'pending' ? ' active' : '' }}">
+        {{ 'Needs compression'|t('squash') }} <span class="badge" style="margin-left:7px;">{{ pendingCount }}</span>
+    </a>
+</div>
+
+<div id="squash-vue-table"></div>
+
+{% js %}
+    (() => {
+        const columns = [
+            { name: '__slot:title', title: Craft.t('squash', 'Asset') },
+            { name: 'type', title: Craft.t('squash', 'Type') },
+            { name: 'size', title: Craft.t('squash', 'Size'), callback: (v) => v },
+            { name: 'saved', title: Craft.t('squash', 'Saved'), callback: (v) => v },
+            { name: 'compressedOn', title: Craft.t('squash', 'Compressed On'), callback: (v) => v },
+            { name: 'actions', title: '', callback: (v) => v },
+        ];
+
+        new Craft.VueAdminTable({
+            columns: columns,
+            container: '#squash-vue-table',
+            tableDataEndpoint: 'squash/report/{{ view }}',
+            search: true,
+            perPage: 50,
+            emptyMessage: Craft.t('squash', '{{ view == 'compressed' ? 'Nothing has been compressed yet.' : 'No assets are over the threshold.' }}'),
+        });
+
+        // Row Compress / Restore buttons (rendered inside the Vue table).
+        if (window.__squashUtilBound) return;
+        window.__squashUtilBound = true;
+        document.addEventListener('click', async (e) => {
+            const compressBtn = e.target.closest('[data-squash-compress]');
+            const restoreBtn = e.target.closest('[data-squash-restore]');
+            try {
+                if (compressBtn) {
+                    await Craft.sendActionRequest('POST', 'squash/compress/queue', {
+                        data: { assetId: compressBtn.getAttribute('data-squash-compress') },
+                    });
+                    Craft.cp.displayNotice(Craft.t('squash', 'Queued for compression.'));
+                    setTimeout(() => window.location.reload(), 500);
+                } else if (restoreBtn) {
+                    if (!confirm(Craft.t('squash', 'Restore the original from backup? This replaces the current file.'))) {
+                        return;
+                    }
+                    await Craft.sendActionRequest('POST', 'squash/compress/restore', {
+                        data: { assetId: restoreBtn.getAttribute('data-squash-restore') },
+                    });
+                    Craft.cp.displayNotice(Craft.t('squash', 'Original restored.'));
+                    setTimeout(() => window.location.reload(), 500);
+                }
+            } catch (err) {
+                Craft.cp.displayError();
+            }
+        });
+    })();
+{% endjs %}

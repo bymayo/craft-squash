@@ -1,0 +1,365 @@
+{# @var plugin \bymayo\squash\Squash #}
+{# @var settings \bymayo\squash\models\Settings #}
+{# @var compressors \bymayo\squash\compressors\CompressorInterface[] #}
+{# @var environment array #}
+
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% css %}
+    .squash-hr {
+        margin-left: -24px;
+        margin-right: -24px;
+        width: auto;
+    }
+{% endcss %}
+
+{% set fullPageForm = true %}
+{% set title = 'Squash settings'|t('squash') %}
+
+{% set tabs = {
+    general: { label: 'General'|t('squash'), url: '#settings-general' },
+    engine: { label: 'Image driver'|t('squash'), url: '#settings-engine' },
+    formats: { label: 'Formats & quality'|t('squash'), url: '#settings-formats' },
+} %}
+
+{% set driverOptions = [] %}
+{% for handle, compressor in compressors %}
+    {% if handle == 'api' %}
+        {% set driverOptions = driverOptions|merge([
+            { label: 'TinyPNG'|t('squash'), value: 'api-tinypng' },
+            { label: 'ShortPixel'|t('squash'), value: 'api-shortpixel' },
+            { label: 'Kraken.io'|t('squash'), value: 'api-kraken' },
+        ]) %}
+    {% else %}
+        {% set driverOptions = driverOptions|merge([{
+            label: compressor.displayName,
+            value: handle,
+        }]) %}
+    {% endif %}
+{% endfor %}
+
+{# The API driver stores the service separately; surface it as one combined value. #}
+{% set driverValue = settings.activeDriver == 'api' ? 'api-' ~ settings.apiService : settings.activeDriver %}
+
+{% set fsOptions = [{ label: 'Store alongside the asset'|t('squash'), value: '' }] %}
+{% for fs in craft.app.fs.allFilesystems %}
+    {% set fsOptions = fsOptions|merge([{ label: fs.name, value: fs.handle }]) %}
+{% endfor %}
+
+{% block content %}
+
+    <input type="hidden" name="action" value="squash/settings/save">
+    {{ redirectInput('squash/settings') }}
+
+    {# General #}
+    <div id="settings-general">
+        {{ forms.textField({
+            first: true,
+            label: 'Plugin name'|t('squash'),
+            id: 'pluginName',
+            name: 'settings[pluginName]',
+            value: settings.pluginName,
+            required: true,
+            errors: settings.getErrors('pluginName'),
+        }) }}
+
+        <hr class="squash-hr">
+
+        {# On upload #}
+        {{ forms.lightswitchField({
+            label: 'Compress on upload'|t('squash'),
+            instructions: 'Automatically queue newly uploaded assets for compression.'|t('squash'),
+            id: 'compressOnUpload',
+            name: 'settings[compressOnUpload]',
+            on: settings.compressOnUpload,
+        }) }}
+
+        {# Auto-compress threshold — preset sizes (values are bytes) + Custom #}
+        {% set autoPresets = [
+            { label: 'No minimum'|t('squash'), value: '0' },
+            { label: '256 KB', value: '262144' },
+            { label: '512 KB', value: '524288' },
+            { label: '1 MB', value: '1048576' },
+            { label: '2 MB', value: '2097152' },
+            { label: '5 MB', value: '5242880' },
+            { label: '10 MB', value: '10485760' },
+        ] %}
+        {% set autoCurrent = settings.autoUploadThreshold ~ '' %}
+        {% set autoIsPreset = autoCurrent in autoPresets|map(p => p.value) %}
+
+        {{ forms.selectField({
+            label: 'Auto-compress threshold'|t('squash'),
+            instructions: 'Only auto-compress uploads at least this size.'|t('squash'),
+            id: 'autoThresholdPreset',
+            name: 'autoThresholdPreset',
+            options: autoPresets|merge([{ label: 'Custom…'|t('squash'), value: 'custom' }]),
+            value: autoIsPreset ? autoCurrent : 'custom',
+        }) }}
+
+        <div id="autoThresholdCustom" {{ autoIsPreset ? 'class="hidden"' : '' }}>
+            {{ forms.textField({
+                type: 'number',
+                label: 'Custom size (bytes)'|t('squash'),
+                id: 'autoThresholdCustomInput',
+                name: 'autoThresholdCustomInput',
+                value: autoIsPreset ? '' : autoCurrent,
+                size: 12,
+                min: 0,
+            }) }}
+        </div>
+
+        <input type="hidden" id="autoThreshold" name="settings[autoUploadThreshold]" value="{{ settings.autoUploadThreshold }}">
+
+        {# Report threshold — preset sizes (values are bytes) + Custom #}
+        {% set reportPresets = [
+            { label: 'No minimum'|t('squash'), value: '0' },
+            { label: '512 KB', value: '524288' },
+            { label: '1 MB', value: '1048576' },
+            { label: '2 MB', value: '2097152' },
+            { label: '5 MB', value: '5242880' },
+            { label: '10 MB', value: '10485760' },
+            { label: '20 MB', value: '20971520' },
+        ] %}
+        {% set reportCurrent = settings.reportThreshold ~ '' %}
+        {% set reportIsPreset = reportCurrent in reportPresets|map(p => p.value) %}
+
+        {{ forms.selectField({
+            label: 'Report threshold'|t('squash'),
+            instructions: 'Assets larger than this are flagged for compression in the report utility.'|t('squash'),
+            id: 'reportThresholdPreset',
+            name: 'reportThresholdPreset',
+            options: reportPresets|merge([{ label: 'Custom…'|t('squash'), value: 'custom' }]),
+            value: reportIsPreset ? reportCurrent : 'custom',
+        }) }}
+
+        <div id="reportThresholdCustom" {{ reportIsPreset ? 'class="hidden"' : '' }}>
+            {{ forms.textField({
+                type: 'number',
+                label: 'Custom size (bytes)'|t('squash'),
+                id: 'reportThresholdCustomInput',
+                name: 'reportThresholdCustomInput',
+                value: reportIsPreset ? '' : reportCurrent,
+                size: 12,
+                min: 0,
+            }) }}
+        </div>
+
+        <input type="hidden" id="reportThreshold" name="settings[reportThreshold]" value="{{ settings.reportThreshold }}">
+
+        {% js %}
+            (() => {
+                const wire = (presetId, wrapId, inputId, hiddenId) => {
+                    const preset = document.getElementById(presetId);
+                    const wrap = document.getElementById(wrapId);
+                    const input = document.getElementById(inputId);
+                    const hidden = document.getElementById(hiddenId);
+                    if (!preset || !wrap || !input || !hidden) return;
+                    const sync = () => {
+                        if (preset.value === 'custom') {
+                            wrap.classList.remove('hidden');
+                            hidden.value = String(parseInt(input.value, 10) || 0);
+                        } else {
+                            wrap.classList.add('hidden');
+                            hidden.value = preset.value;
+                        }
+                    };
+                    preset.addEventListener('change', sync);
+                    input.addEventListener('input', sync);
+                    sync();
+                };
+                wire('autoThresholdPreset', 'autoThresholdCustom', 'autoThresholdCustomInput', 'autoThreshold');
+                wire('reportThresholdPreset', 'reportThresholdCustom', 'reportThresholdCustomInput', 'reportThreshold');
+            })();
+        {% endjs %}
+
+        <hr class="squash-hr">
+
+        {# Backups & report #}
+        {{ forms.lightswitchField({
+            label: 'Keep backups'|t('squash'),
+            instructions: 'Copy the original to a backup location before overwriting it, so it can be restored.'|t('squash'),
+            id: 'keepBackups',
+            name: 'settings[keepBackups]',
+            on: settings.keepBackups,
+        }) }}
+
+        {{ forms.selectField({
+            label: 'Backup filesystem'|t('squash'),
+            instructions: 'Where to store original backups. Backups are written straight to the filesystem and aren’t shown in the control panel’s asset browser (so they’re never treated as assets or re-compressed).'|t('squash'),
+            id: 'backupFsHandle',
+            name: 'settings[backupFsHandle]',
+            value: settings.backupFsHandle,
+            options: fsOptions,
+            errors: settings.getErrors('backupFsHandle'),
+        }) }}
+
+        {{ forms.textField({
+            label: 'Backup folder'|t('squash'),
+            instructions: 'Folder (on the backup filesystem) that backups are stored in, mirroring each asset’s own folder structure.'|t('squash'),
+            id: 'backupFolder',
+            name: 'settings[backupFolder]',
+            value: settings.backupFolder,
+            errors: settings.getErrors('backupFolder'),
+        }) }}
+    </div>
+
+    {# Engine #}
+    <div id="settings-engine" class="hidden">
+        {{ forms.selectField({
+            first: true,
+            label: 'Image driver'|t('squash'),
+            instructions: 'The engine used to compress images (JPEG, PNG, GIF, SVG). PDFs always use Ghostscript.'|t('squash'),
+            id: 'activeDriver',
+            name: 'settings[activeDriver]',
+            value: driverValue,
+            options: driverOptions,
+            errors: settings.getErrors('activeDriver'),
+        }) }}
+
+        <div id="squash-api-settings" {{ settings.activeDriver == 'api' ? '' : 'class="hidden"' }}>
+            {{ forms.autosuggestField({
+                label: 'API key'|t('squash'),
+                id: 'apiKey',
+                name: 'settings[apiKey]',
+                value: settings.apiKey,
+                suggestEnvVars: true,
+                errors: settings.getErrors('apiKey'),
+            }) }}
+
+            {# API secret — only Kraken.io needs one. #}
+            <div id="squash-api-secret" {{ settings.activeDriver == 'api' and settings.apiService == 'kraken' ? '' : 'class="hidden"' }}>
+                {{ forms.autosuggestField({
+                    label: 'API secret'|t('squash'),
+                    instructions: 'Required for Kraken.io.'|t('squash'),
+                    id: 'apiSecret',
+                    name: 'settings[apiSecret]',
+                    value: settings.apiSecret,
+                    suggestEnvVars: true,
+                    errors: settings.getErrors('apiSecret'),
+                }) }}
+            </div>
+        </div>
+
+        {% js %}
+            (() => {
+                const select = document.getElementById('activeDriver');
+                const apiSettings = document.getElementById('squash-api-settings');
+                const apiSecret = document.getElementById('squash-api-secret');
+                if (!select || !apiSettings) return;
+                const sync = () => {
+                    apiSettings.classList.toggle('hidden', !select.value.startsWith('api-'));
+                    if (apiSecret) {
+                        apiSecret.classList.toggle('hidden', select.value !== 'api-kraken');
+                    }
+                };
+                select.addEventListener('change', sync);
+                sync();
+            })();
+        {% endjs %}
+
+        <hr class="squash-hr">
+
+        {{ forms.field({
+            label: 'Server support'|t('squash'),
+        }, null) }}
+
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th scope="col">{{ 'Tool'|t('squash') }}</th>
+                    <th scope="col">{{ 'Type'|t('squash') }}</th>
+                    <th scope="col">{{ 'Handles'|t('squash') }}</th>
+                    <th scope="col">{{ 'Status'|t('squash') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in environment %}
+                    <tr>
+                        <th scope="row" data-title="{{ 'Tool'|t('squash') }}"><code>{{ row.name }}</code></th>
+                        <td data-title="{{ 'Type'|t('squash') }}">{{ row.type }}</td>
+                        <td data-title="{{ 'Handles'|t('squash') }}">{{ row.handles }}</td>
+                        <td data-title="{{ 'Status'|t('squash') }}">
+                            {% if row.installed %}
+                                <span class="status green"></span>{{ 'Installed'|t('squash') }}
+                            {% else %}
+                                <span class="status red"></span>{{ 'Not found'|t('squash') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Formats & quality #}
+    <div id="settings-formats" class="hidden">
+        {{ forms.checkboxGroupField({
+            first: true,
+            label: 'Enabled formats'|t('squash'),
+            instructions: 'Only these formats will be compressed.'|t('squash'),
+            name: 'settings[enabledFormats]',
+            values: settings.enabledFormats,
+            options: [
+                { label: 'JPEG', value: 'jpg' },
+                { label: 'PNG', value: 'png' },
+                { label: 'GIF', value: 'gif' },
+                { label: 'SVG', value: 'svg' },
+                { label: 'PDF', value: 'pdf' },
+            ],
+        }) }}
+
+        {{ forms.textField({
+            type: 'number',
+            label: 'JPEG quality'|t('squash'),
+            instructions: '1–100. Lower is smaller. 80–85 is a good balance.'|t('squash'),
+            id: 'jpegQuality',
+            name: 'settings[jpegQuality]',
+            value: settings.jpegQuality,
+            size: 5,
+            min: 1,
+            max: 100,
+            errors: settings.getErrors('jpegQuality'),
+        }) }}
+
+        {{ forms.textField({
+            label: 'PNG quality'|t('squash'),
+            instructions: 'A “min-max” range for pngquant (e.g. 65-80). The Imagick/GD fallback uses the upper bound.'|t('squash'),
+            id: 'pngQuality',
+            name: 'settings[pngQuality]',
+            value: settings.pngQuality,
+            class: 'code',
+            size: 10,
+            errors: settings.getErrors('pngQuality'),
+        }) }}
+
+        {{ forms.textField({
+            type: 'number',
+            label: 'GIF optimisation level'|t('squash'),
+            instructions: '1–3 (gifsicle). Higher is smaller but slower.'|t('squash'),
+            id: 'gifOptimizationLevel',
+            name: 'settings[gifOptimizationLevel]',
+            value: settings.gifOptimizationLevel,
+            size: 3,
+            min: 1,
+            max: 3,
+            errors: settings.getErrors('gifOptimizationLevel'),
+        }) }}
+
+        {{ forms.selectField({
+            label: 'PDF quality'|t('squash'),
+            instructions: 'PDFs always use Ghostscript (regardless of the image driver). “Screen” is smallest (72 dpi); “Printer”/“Prepress” keep more quality. Requires the Ghostscript (gs) binary.'|t('squash'),
+            id: 'pdfQuality',
+            name: 'settings[pdfQuality]',
+            value: settings.pdfQuality,
+            options: [
+                { label: 'Screen (smallest, 72 dpi)'|t('squash'), value: 'screen' },
+                { label: 'Ebook (150 dpi)'|t('squash'), value: 'ebook' },
+                { label: 'Printer (300 dpi)'|t('squash'), value: 'printer' },
+                { label: 'Prepress (300 dpi, colour-preserving)'|t('squash'), value: 'prepress' },
+            ],
+            errors: settings.getErrors('pdfQuality'),
+        }) }}
+    </div>
+
+{% endblock %}

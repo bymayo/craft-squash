@@ -1,0 +1,44 @@
+{
+  "name": "bymayo/squash",
+  "description": "Compress images on upload or on demand, restore originals from backup, and report on oversized assets.",
+  "version": "0.1.0",
+  "type": "craft-plugin",
+  "license": "proprietary",
+  "support": {
+    "email": "jason@bymayo.co.uk",
+    "issues": "https://github.com/bymayo/craft-squash/issues?state=open",
+    "source": "https://github.com/bymayo/craft-squash",
+    "docs": "https://github.com/bymayo/craft-squash",
+    "rss": "https://github.com/bymayo/craft-squash/releases.atom"
+  },
+  "require": {
+    "php": ">=8.2",
+    "craftcms/cms": "^5.6.0"
+  },
+  "require-dev": {
+    "craftcms/phpstan": "dev-main"
+  },
+  "autoload": {
+    "psr-4": {
+      "bymayo\\squash\\": "src/"
+    }
+  },
+  "extra": {
+    "handle": "squash",
+    "name": "Squash",
+    "developer": "ByMayo",
+    "documentationUrl": "https://github.com/bymayo/craft-squash",
+    "changelogUrl": "https://raw.githubusercontent.com/bymayo/craft-squash/craft-5/CHANGELOG.md",
+    "class": "bymayo\\squash\\Squash"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
+}
