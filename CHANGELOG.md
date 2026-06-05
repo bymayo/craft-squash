@@ -1,5 +1,10 @@
 # Release Notes for Squash
 
+## 1.0.2 - 2026-06-05
+
+### Added
+- **Needs Compression** dashboard widget showing how many assets are still over the threshold and uncompressed, linking through to the report utility. Only available to users with report-utility access.
+
 ## 1.0.1 - 2026-06-04
 
 ### Changed

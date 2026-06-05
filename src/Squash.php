@@ -12,6 +12,7 @@ use bymayo\squash\services\Reporter;
 use bymayo\squash\services\Squasher;
 use bymayo\squash\elements\conditions\CompressedConditionRule;
 use bymayo\squash\utilities\SquashReport;
+use bymayo\squash\widgets\PendingAssets;
 use Craft;
 use craft\base\conditions\BaseCondition;
 use craft\base\Element;
@@ -36,6 +37,7 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\log\MonologTarget;
+use craft\services\Dashboard;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\services\Utilities;
@@ -214,6 +216,15 @@ class Squash extends Plugin
             Utilities::EVENT_REGISTER_UTILITIES,
             function(RegisterComponentTypesEvent $event) {
                 $event->types[] = SquashReport::class;
+            }
+        );
+
+        // Dashboard widget — count of assets still needing compression.
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = PendingAssets::class;
             }
         );
 
