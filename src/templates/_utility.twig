@@ -97,10 +97,11 @@
     (() => {
         const columns = [
             { name: '__slot:title', title: Craft.t('squash', 'Asset') },
-            { name: 'type', title: Craft.t('squash', 'Type') },
-            { name: 'size', title: Craft.t('squash', 'Size'), callback: (v) => v },
+            { name: 'type', title: Craft.t('squash', 'Type'), sortField: true },
+            { name: 'size', title: Craft.t('squash', 'Size'), sortField: true, callback: (v) => v },
             { name: 'saved', title: Craft.t('squash', 'Saved'), callback: (v) => v },
-            { name: 'compressedOn', title: Craft.t('squash', 'Compressed On'), callback: (v) => v },
+            { name: 'modified', title: Craft.t('squash', 'File Modified Date'), sortField: true, callback: (v) => v },
+            { name: 'compressedOn', title: Craft.t('squash', 'Compressed On'), sortField: true, callback: (v) => v },
             { name: 'actions', title: '', callback: (v) => v },
         ];
 

@@ -6,9 +6,12 @@ use bymayo\squash\models\CompressionResult;
 use bymayo\squash\Squash;
 use Craft;
 use craft\elements\Asset;
+use craft\elements\db\AssetQuery;
 use craft\helpers\AdminTable;
 use craft\helpers\Html;
 use craft\web\Controller;
+use craft\web\Request;
+use yii\db\Expression;
 use yii\web\Response;
 
 /**
@@ -51,6 +54,7 @@ class ReportController extends Controller
 
         // Database-level pagination — only the current page of assets is loaded.
         $query = $reporter->reportQuery($view, $search);
+        $this->applySort($query, $request);
         $total = (int) (clone $query)->count();
         $pageAssets = $query->offset(($page - 1) * $limit)->limit($limit)->all();
 
@@ -82,6 +86,11 @@ class ReportController extends Controller
                 $savedHtml = '<span class="light">&mdash;</span>';
             }
 
+            // File modified date (from the asset itself, not our log).
+            $modifiedHtml = $asset->dateModified
+                ? Html::encode($formatter->asDatetime($asset->dateModified, 'short'))
+                : '<span class="light">&mdash;</span>';
+
             // Compressed on.
             $dateHtml = ($isCompressed || $isSkipped)
                 ? Html::encode($formatter->asDatetime($log->dateCreated, 'short'))
@@ -104,6 +113,7 @@ class ReportController extends Controller
                 'type' => strtoupper($asset->getExtension()),
                 'size' => $size,
                 'saved' => $savedHtml,
+                'modified' => $modifiedHtml,
                 'compressedOn' => $dateHtml,
                 'actions' => $actions,
             ];
@@ -113,5 +123,44 @@ class ReportController extends Controller
             'pagination' => AdminTable::paginationLinks($page, $total, $limit),
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Apply the VueAdminTable column sort (Size / Type / File Modified Date /
+     * Compressed On) to the query. Any other field keeps the default order set
+     * in Reporter::reportQuery().
+     */
+    private function applySort(AssetQuery $query, Request $request): void
+    {
+        $field = (string) $request->getParam('sort.0.field', '');
+        $dir = $request->getParam('sort.0.direction') === 'desc' ? SORT_DESC : SORT_ASC;
+
+        if ($field === 'size') {
+            $query->orderBy(['assets.size' => $dir]);
+            return;
+        }
+
+        if ($field === 'modified') {
+            $query->orderBy(['assets.dateModified' => $dir]);
+            return;
+        }
+
+        if ($field === 'compressedOn') {
+            // The compression date lives in our log (one row per asset), so join
+            // it in to sort by it. Assets with no log row sort as NULL.
+            $query->leftJoin(['squash_log' => '{{%squash_log}}'], '[[squash_log.assetId]] = [[elements.id]]')
+                ->orderBy(['squash_log.dateCreated' => $dir]);
+            return;
+        }
+
+        if ($field === 'type') {
+            // The extension isn't a column, so derive it from the filename
+            // (driver-specific). Tie-break biggest-first within a type.
+            $ext = Craft::$app->getDb()->getIsMysql()
+                ? 'LOWER(SUBSTRING_INDEX([[assets.filename]], \'.\', -1))'
+                : 'LOWER(SUBSTRING([[assets.filename]] FROM \'\.([^.]+)$\'))';
+            $dirSql = $dir === SORT_DESC ? 'DESC' : 'ASC';
+            $query->orderBy(new Expression("$ext $dirSql, [[assets.size]] DESC"));
+        }
     }
 }

@@ -1,5 +1,14 @@
 # Release Notes for Squash
 
+## 1.0.4 - 2026-06-08
+
+### Added
+- **File Modified Date** column in the report utility.
+- Sortable **Size**, **Type**, **File Modified Date** and **Compressed On** columns in the report utility.
+
+### Changed
+- The report utility now orders by **File Modified Date** (newest first) by default.
+
 ## 1.0.3 - 2026-06-08
 
 ### Changed

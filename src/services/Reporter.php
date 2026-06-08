@@ -22,7 +22,9 @@ class Reporter extends Component
      *   - 'compressed' — assets with a compressed log row.
      *   - 'pending'    — assets over the threshold, not compressed, enabled format.
      *   - 'all'        — the union of both.
-     * Biggest first. Optionally filtered by a filename search term.
+     * Ordered by file modified date (newest first) by default; the report
+     * controller overrides this when a column sort is requested. Optionally
+     * filtered by a filename search term.
      */
     public function reportQuery(string $view, ?string $search = null): AssetQuery
     {
@@ -52,7 +54,7 @@ class Reporter extends Component
             $formatCond,
         ];
 
-        $query = Asset::find()->orderBy(['elements.dateCreated' => SORT_DESC]);
+        $query = Asset::find()->orderBy(['assets.dateModified' => SORT_DESC]);
 
         if ($view === 'compressed') {
             $query->andWhere(['elements.id' => $compressedSub]);
