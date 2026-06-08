@@ -52,7 +52,7 @@ class ReportController extends Controller
         $canCompress = $user->checkPermission('squash-compressAssets');
         $canRestore = $user->checkPermission('squash-restoreAssets');
 
-        // Database-level pagination — only the current page of assets is loaded.
+        // Database-level pagination: only the current page of assets is loaded.
         $query = $reporter->reportQuery($view, $search);
         $this->applySort($query, $request);
         $total = (int) (clone $query)->count();

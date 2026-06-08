@@ -37,7 +37,7 @@ abstract class BaseCompressor implements CompressorInterface
     /**
      * Lightweight, lossless SVG minify: drop the XML prolog comment noise,
      * editor metadata, comments, and collapse inter-tag and attribute
-     * whitespace. Conservative on purpose — never touches element/attr names.
+     * whitespace. Conservative on purpose; never touches element/attr names.
      *
      * @return bool true if $path was rewritten smaller
      */

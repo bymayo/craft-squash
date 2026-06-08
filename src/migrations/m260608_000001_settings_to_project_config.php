@@ -14,7 +14,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
  *
  * The copy only runs on an environment that can write project config (admin
  * changes enabled). Locked environments (e.g. production) receive the settings
- * through the deployed `project.yaml` instead — so do the upgrade on a writable
+ * through the deployed `project.yaml` instead, so do the upgrade on a writable
  * environment first, then deploy. If you upgrade on a locked environment with
  * customised settings, re-save them once on a writable environment.
  */

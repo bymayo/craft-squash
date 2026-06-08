@@ -19,9 +19,9 @@ class Reporter extends Component
 {
     /**
      * A (database-paginated) asset query for one of the report views:
-     *   - 'compressed' — assets with a compressed log row.
-     *   - 'pending'    — assets over the threshold, not compressed, enabled format.
-     *   - 'all'        — the union of both.
+     *   - 'compressed': assets with a compressed log row.
+     *   - 'pending':    assets over the threshold, not compressed, enabled format.
+     *   - 'all':        the union of both.
      * Ordered by file modified date (newest first) by default; the report
      * controller overrides this when a column sort is requested. Optionally
      * filtered by a filename search term.

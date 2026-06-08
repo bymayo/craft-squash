@@ -48,7 +48,7 @@ class SettingsController extends Controller
             $values['activeDriver'] = 'api';
         }
 
-        // A checkbox group with nothing ticked posts no key at all — normalise
+        // A checkbox group with nothing ticked posts no key at all, so normalise
         // it to an empty array so "none enabled" actually saves.
         $values['enabledFormats'] = isset($values['enabledFormats']) && is_array($values['enabledFormats'])
             ? array_values($values['enabledFormats'])

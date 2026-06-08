@@ -30,7 +30,7 @@ class PendingAssets extends Widget
     }
 
     /**
-     * Only offer the widget to users who can reach the report utility — the
+     * Only offer the widget to users who can reach the report utility, the
      * same permission gate the utility itself uses.
      */
     public static function isSelectable(): bool
@@ -40,7 +40,7 @@ class PendingAssets extends Widget
     }
 
     /**
-     * No heading — the body speaks for itself. Craft's dashboard omits the
+     * No heading; the body speaks for itself. Craft's dashboard omits the
      * widget-heading block entirely when the title is null.
      */
     public function getTitle(): ?string
@@ -53,7 +53,7 @@ class PendingAssets extends Widget
         $pending = (int) Squash::getInstance()->reporter->reportQuery('pending')->count();
         $url = UrlHelper::cpUrl('utilities/squash-assets', ['view' => 'pending']);
 
-        // Nothing waiting — a reassuring, green "all clear" state.
+        // Nothing waiting: a reassuring, green "all clear" state.
         if ($pending === 0) {
             return Html::tag('div', implode('', [
                 Html::tag('div', '', [

@@ -37,7 +37,7 @@ class BinaryCompressor extends BaseCompressor
         if (!$this->shellEnabled()) {
             return false;
         }
-        // Available if we can do *something* — any binary, or SVG via fallback.
+        // Available if we can do *something*: any binary, or SVG via fallback.
         return $this->binary('jpegoptim')
             || $this->binary('pngquant')
             || $this->binary('gifsicle')
@@ -96,7 +96,7 @@ class BinaryCompressor extends BaseCompressor
         $range = $this->settings()->pngQuality ?: '65-80';
         // Write to a sibling temp file then swap, so a failed pass can't corrupt
         // the working copy. pngquant exits 99 when it can't hit the quality
-        // floor — treat that as "no usable result" rather than a hard error.
+        // floor; treat that as "no usable result" rather than a hard error.
         $tmp = $path . '.sq.png';
         $process = new Process([$bin, "--quality={$range}", '--force', '--strip', '--output', $tmp, '--', $path]);
         $process->run();
@@ -164,7 +164,7 @@ class BinaryCompressor extends BaseCompressor
                 return $this->ok('svgo.');
             }
         }
-        // No svgo (or it failed) — fall back to the dependency-free minifier.
+        // No svgo (or it failed): fall back to the dependency-free minifier.
         return $this->minifySvg($path)
             ? $this->ok('SVG minified (PHP fallback).')
             : $this->fail('No smaller SVG result.');

@@ -21,7 +21,7 @@ class Compress extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Disable the trigger when every selected asset is already compressed
-        // (a mixed selection stays enabled — the engine skips the compressed ones).
+        // (a mixed selection stays enabled; the engine skips the compressed ones).
         Craft::$app->getView()->registerJsWithVars(fn($type, $attr) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
@@ -47,7 +47,7 @@ JS, [static::class, 'data-squash-compressed']);
         $userId = Craft::$app->getUser()->getId();
         $alreadyCompressed = 0;
 
-        // Skip assets that are already compressed (mixed selections are fine —
+        // Skip assets that are already compressed (mixed selections are fine,
         // only the not-yet-compressed ones get queued).
         $toQueue = [];
         foreach ($query->all() as $asset) {

@@ -38,7 +38,7 @@ class Settings extends Model
     /** API key for the chosen service. */
     public string $apiKey = '';
 
-    /** API secret — only used by services that need one (e.g. Kraken.io). */
+    /** API secret, only used by services that need one (e.g. Kraken.io). */
     public string $apiSecret = '';
 
     /**

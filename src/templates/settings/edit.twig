@@ -86,7 +86,7 @@
             on: settings.compressOnUpload,
         }) }}
 
-        {# Auto-compress threshold — preset sizes (values are bytes) + Custom #}
+        {# Auto-compress threshold: preset sizes (values are bytes) + Custom #}
         {% set autoPresets = [
             { label: 'No minimum'|t('squash'), value: '0' },
             { label: '256 KB', value: '262144' },
@@ -122,7 +122,7 @@
 
         <input type="hidden" id="autoThreshold" name="settings[autoUploadThreshold]" value="{{ settings.autoUploadThreshold }}">
 
-        {# Report threshold — preset sizes (values are bytes) + Custom #}
+        {# Report threshold: preset sizes (values are bytes) + Custom #}
         {% set reportPresets = [
             { label: 'No minimum'|t('squash'), value: '0' },
             { label: '512 KB', value: '524288' },
@@ -250,7 +250,7 @@
                 errors: settings.getErrors('apiKey'),
             }) }}
 
-            {# API secret — only Kraken.io needs one. #}
+            {# API secret: only Kraken.io needs one. #}
             <div id="squash-api-secret" {{ settings.activeDriver == 'api' and settings.apiService == 'kraken' ? '' : 'class="hidden"' }}>
                 {{ forms.autosuggestField({
                     label: 'API secret'|t('squash'),

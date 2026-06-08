@@ -40,7 +40,7 @@ class Install extends Migration
         // is later deleted, so storage can still be reclaimed and history read.
 
         // Settings are stored in Project Config (plugins.squash.settings), not in
-        // a DB table — see Squash::createSettingsModel().
+        // a DB table. See Squash::createSettingsModel().
 
         return true;
     }

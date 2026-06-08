@@ -28,7 +28,7 @@ class Squasher extends Component
     public const BACKUP_PREFIX = '_squash-backups';
 
     /**
-     * Compress a single asset in place. Never throws — failures are captured in
+     * Compress a single asset in place. Never throws; failures are captured in
      * the returned result and the log.
      */
     public function compress(Asset $asset, ?int $userId = null): CompressionResult
@@ -50,7 +50,7 @@ class Squasher extends Component
             return $result;
         }
 
-        // Never re-compress something already compressed — re-running a lossy
+        // Never re-compress something already compressed; re-running a lossy
         // codec degrades quality for no real gain. Return without logging so the
         // asset's latest state stays "compressed". (Restoring clears this.)
         if ($this->isCompressed((int) $asset->id)) {
@@ -245,7 +245,7 @@ class Squasher extends Component
 
     /**
      * Set of asset IDs whose latest run left them compressed, keyed by id for
-     * O(1) lookup. Memoised — one query serves a whole element index render.
+     * O(1) lookup. Memoised: one query serves a whole element index render.
      *
      * @return array<int, true>
      */
@@ -255,7 +255,7 @@ class Squasher extends Component
             return $this->compressedIdSet;
         }
 
-        // A "compressed" row's presence is an accurate signal — restoring deletes
+        // A "compressed" row's presence is an accurate signal: restoring deletes
         // an asset's rows, and the re-compress guard prevents later non-compressed
         // rows from being added once an asset is compressed.
         $ids = (new Query())
@@ -290,7 +290,7 @@ class Squasher extends Component
     private ?array $skippedIdSet = null;
 
     /**
-     * Set of asset IDs whose latest run was skipped (already optimised — no
+     * Set of asset IDs whose latest run was skipped (already optimised, no
      * smaller result), keyed by id. Memoised for element-index renders.
      *
      * @return array<int, true>
@@ -316,7 +316,7 @@ class Squasher extends Component
 
     /**
      * Set of asset IDs that have a restorable backup, keyed by id for O(1)
-     * lookup. Memoised — one query serves a whole element index render.
+     * lookup. Memoised: one query serves a whole element index render.
      *
      * @return array<int, true>
      */
@@ -345,7 +345,7 @@ class Squasher extends Component
     }
 
     /**
-     * Delete an asset's backup file(s) and all of its log rows — used when an
+     * Delete an asset's backup file(s) and all of its log rows, used when an
      * asset is permanently deleted, so nothing is left behind.
      */
     public function forgetAsset(int $assetId): void
@@ -435,7 +435,7 @@ class Squasher extends Component
                 if ($row->backupPath && $fs && $fs->fileExists($row->backupPath)) {
                     $fs->deleteFile($row->backupPath);
                 } elseif ($row->backupPath && !$fs) {
-                    // Backup filesystem is gone — can't safely confirm deletion.
+                    // Backup filesystem is gone; can't safely confirm deletion.
                     continue;
                 }
             } catch (\Throwable $e) {
@@ -529,7 +529,7 @@ class Squasher extends Component
         ?string $backupPath = null,
         ?string $backupFs = null,
     ): void {
-        // Keep a single row per asset reflecting its latest state — replace any
+        // Keep a single row per asset reflecting its latest state, replacing any
         // existing rows (so repeated "skipped" runs don't pile up duplicates).
         CompressionLogRecord::deleteAll(['assetId' => (int) $result->assetId]);
 
@@ -550,7 +550,7 @@ class Squasher extends Component
         // Mirror every outcome into the dedicated squash.log so skips/failures
         // are diagnosable without digging through the DB log table.
         $line = sprintf(
-            'Asset #%d (%s) %s — %s → %s. %s',
+            'Asset #%d (%s) %s: %s → %s. %s',
             $result->assetId,
             $result->format,
             $result->status,

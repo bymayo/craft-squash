@@ -115,8 +115,8 @@ class Squash extends Plugin
     }
 
     /**
-     * Send Craft's built-in plugin settings links — both the editable and the
-     * read-only (locked project config) variants — to our own settings page,
+     * Send Craft's built-in plugin settings links, both the editable and the
+     * read-only (locked project config) variants, to our own settings page,
      * which renders read-only when admin changes are disabled.
      */
     public function getSettingsResponse(): mixed
@@ -158,7 +158,7 @@ class Squash extends Plugin
             }
         );
 
-        // Dashboard widget — count of assets still needing compression.
+        // Dashboard widget: count of assets still needing compression.
         Event::on(
             Dashboard::class,
             Dashboard::EVENT_REGISTER_WIDGET_TYPES,
@@ -244,7 +244,7 @@ class Squash extends Plugin
                 }
                 $id = (int) $asset->id;
                 if (isset($this->squasher->compressedAssetIdSet()[$id])) {
-                    // Compressed (saved space) — green check.
+                    // Compressed (saved space): green check.
                     $event->html = Html::tag('span', '', [
                         'data' => ['icon' => 'check'],
                         'title' => Craft::t('squash', 'Compressed'),
@@ -252,7 +252,7 @@ class Squash extends Plugin
                         'style' => 'color: var(--enabled-color, #00b300);',
                     ]);
                 } elseif (isset($this->squasher->skippedAssetIdSet()[$id])) {
-                    // Already optimised (no smaller result) — grey check.
+                    // Already optimised (no smaller result): grey check.
                     $event->html = Html::tag('span', '', [
                         'data' => ['icon' => 'check'],
                         'title' => Craft::t('squash', 'Already optimised'),
@@ -275,7 +275,7 @@ class Squash extends Plugin
         );
 
         // Auto-compress new uploads. Gated on `firstSave` so it only fires for
-        // freshly uploaded assets — never for our own write-back (which saves
+        // freshly uploaded assets, never for our own write-back (which saves
         // the asset again with firstSave=false), so there's no recursion.
         Event::on(
             Asset::class,
@@ -334,7 +334,7 @@ class Squash extends Plugin
         $redirect = $asset->getCpEditUrl();
         $items = [];
 
-        // Only offer Compress when it isn't already compressed — once it is, the
+        // Only offer Compress when it isn't already compressed. Once it is, the
         // only relevant action is Restore (mirrors how Restore is hidden until a
         // backup exists).
         if ($user->checkPermission('squash-compressAssets') && !$this->squasher->isCompressed($assetId)) {
@@ -388,7 +388,7 @@ class Squash extends Plugin
         $notYet = Html::tag('span', '—', ['class' => 'light']);
 
         // Only show the run date / user once something has actually happened
-        // (compressed or skipped — a no-gain attempt still counts as "last run").
+        // (compressed or skipped; a no-gain attempt still counts as "last run").
         $hasRun = $isCompressed || $isSkipped;
 
         $event->metadata[Craft::t('squash', 'Compressed at')] = function() use ($log, $hasRun, $notYet) {

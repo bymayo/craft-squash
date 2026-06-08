@@ -26,7 +26,7 @@ return [
     // API key for the chosen service. Prefer an env var, e.g. getenv('TINYPNG_KEY').
     'apiKey' => '',
 
-    // API secret — only used by services that need one (Kraken.io).
+    // API secret, only used by services that need one (Kraken.io).
     'apiSecret' => '',
 
     // File extensions Squash is allowed to compress. 'pdf' needs the Ghostscript

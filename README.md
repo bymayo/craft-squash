@@ -18,7 +18,7 @@ Squash has your back. It compresses your assets for you, automatically on upload
 - **Report utility**: search your assets, see your savings stats, and compress in bulk
 - **Dashboard widget**: a count of how many assets still need compressing, linking straight to the report
 - **At a glance**: see what's been compressed right in the Assets index, and the savings, date and who did it on each asset
-- **Works anywhere**: any Craft filesystem — local, Amazon S3, Servd Asset Storage, and more
+- **Works anywhere**: any Craft filesystem: local, Amazon S3, Servd Asset Storage, and more
 - **Permissions**: control who can compress and who can restore, per user group
 
 ## Install
@@ -43,9 +43,9 @@ Pick the compression engine that suits your host:
   - `jpegoptim` (JPEG)
   - `pngquant` (PNG)
   - `gifsicle` (GIF)
-  - `svgo` (SVG — optional; falls back to a built-in minifier)
+  - `svgo` (SVG, optional; falls back to a built-in minifier)
   - `gs` / Ghostscript (PDF)
-- **Imagick / GD**: nothing extra — uses the `imagick` or `gd` PHP extension that Craft already requires.
+- **Imagick / GD**: nothing extra; uses the `imagick` or `gd` PHP extension that Craft already requires.
 - **API**: an API key for your chosen service:
   - [TinyPNG](https://tinypng.com/developers)
   - [ShortPixel](https://shortpixel.com/api-docs)
@@ -83,7 +83,7 @@ Prefer config files? Copy `src/config.php` to `config/squash.php`. Anything set 
 
 ### On upload
 
-Turn on **Compress on upload** in settings. New uploads are queued for compression automatically — set an **Auto-compress threshold** if you only want to touch files over a certain size.
+Turn on **Compress on upload** in settings. New uploads are queued for compression automatically. Set an **Auto-compress threshold** if you only want to touch files over a certain size.
 
 ### Via Assets
 
@@ -115,7 +115,7 @@ Squash adds a **Compressed** column and filter to the Assets index so you can se
 
 ## Backups & restoring
 
-With **Keep backups** on, the original is backed up before Squash overwrites it — under a configurable `_squash-backups/` folder or a dedicated filesystem. Backups live on the filesystem, not in the control panel.
+With **Keep backups** on, the original is backed up before Squash overwrites it, under a configurable `_squash-backups/` folder or a dedicated filesystem. Backups live on the filesystem, not in the control panel.
 
 - **Restore**: **Restore original file** rolls the asset back, then deletes the backup so it can be compressed again.
 - **Retention**: backups older than **Keep backups for** days are pruned during garbage collection (default 90; `0` = keep forever). Run `php craft squash/backups/prune` to force it.

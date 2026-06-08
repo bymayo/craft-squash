@@ -12,7 +12,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
- * Assets index filter: "Compressed" — on shows compressed assets, off shows
+ * Assets index filter: "Compressed". On shows compressed assets, off shows
  * everything not (yet) compressed.
  */
 class CompressedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
@@ -30,7 +30,7 @@ class CompressedConditionRule extends BaseLightswitchConditionRule implements El
 
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        // Assets that have been processed — compressed, or skipped because they
+        // Assets that have been processed: compressed, or skipped because they
         // were already optimised. Both show a check in the index.
         $processed = (new Query())
             ->select(['assetId'])

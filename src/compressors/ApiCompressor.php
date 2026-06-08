@@ -9,7 +9,7 @@ use craft\helpers\Json;
 
 /**
  * External-API driver. Uploads the file to TinyPNG, ShortPixel or Kraken.io and
- * writes the compressed bytes back. Raster only — SVG isn't sent off-box (it's
+ * writes the compressed bytes back. Raster only; SVG isn't sent off-box (it's
  * minified locally via the PHP fallback instead).
  *
  *   TinyPNG    -> jpg, png
