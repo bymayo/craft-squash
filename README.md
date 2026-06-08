@@ -18,6 +18,7 @@ Squash has your back. It compresses your assets for you, automatically on upload
 - **Report utility**: search your assets, see your savings stats, and compress in bulk
 - **Dashboard widget**: a count of how many assets still need compressing, linking straight to the report
 - **At a glance**: see what's been compressed right in the Assets index, and the savings, date and who did it on each asset
+- **Works anywhere**: any Craft filesystem — local, Amazon S3, Servd Asset Storage, and more
 - **Permissions**: control who can compress and who can restore, per user group
 
 ## Install
@@ -114,19 +115,11 @@ Squash adds a **Compressed** column and filter to the Assets index so you can se
 
 ## Backups & restoring
 
-With **Keep backups** on, the original is copied to a backup location before Squash overwrites the asset — alongside it under a configurable `_squash-backups/` folder, or on a dedicated filesystem. Backups are written straight to the filesystem and aren't shown in the control panel (so they're never re-compressed). 
+With **Keep backups** on, the original is backed up before Squash overwrites it — under a configurable `_squash-backups/` folder or a dedicated filesystem. Backups live on the filesystem, not in the control panel.
 
-Use **Restore original file** to roll an asset back; restoring deletes the backup and clears its history so it can be compressed again.
-
-Backups older than **Keep backups for** days are pruned automatically during Craft's garbage collection (default 90; `0` = keep forever) — once pruned, that asset can no longer be restored. Run `php craft squash/backups/prune` to force a clean-up.
-
-Permanently deleting an asset (from the trash) also deletes its backup and clears its records, so nothing is left behind.
-
-## Remote filesystems (S3, Servd, etc.)
-
-Squash works on any Craft filesystem — local, **Amazon S3**, **Servd Asset Storage**, or anything else implementing Craft's filesystem interface. It never assumes local disk: the source is streamed to a local temp file, compressed there, then written back through Craft's filesystem layer, with backups stored the same way. Backups land on the asset's own filesystem by default, or a dedicated one you choose in settings.
-
-A couple of things to know when assets live behind a CDN (S3 + CloudFront, Servd, etc.): after a file is replaced its CDN edge cache may briefly serve the previous version until it invalidates — if you still see the larger file right after compressing, that's edge caching, not Squash. And Servd's on-the-fly image transforms are complementary: they optimise what's *served*, while Squash optimises the *stored original* (including files transforms don't touch, like PDFs and SVGs).
+- **Restore**: **Restore original file** rolls the asset back, then deletes the backup so it can be compressed again.
+- **Retention**: backups older than **Keep backups for** days are pruned during garbage collection (default 90; `0` = keep forever). Run `php craft squash/backups/prune` to force it.
+- **Cleanup**: permanently deleting an asset also deletes its backup and records.
 
 ## Permissions
 
