@@ -5,10 +5,10 @@ namespace bymayo\squash\models;
 use craft\base\Model;
 
 /**
- * Plugin-wide settings, stored in `{{%squash_settings}}` (NOT Project Config)
- * so admins can adjust drivers, quality and thresholds on production without a
- * deploy clobbering them. Per-environment overrides live in `config/squash.php`
- * and win over the DB row. Same approach as bymayo/nudge and bymayo/points.
+ * Plugin-wide settings, stored in Project Config (`plugins.squash.settings` in
+ * project.yaml) so they're version-controlled and sync across environments.
+ * Per-environment overrides live in `config/squash.php` and win over the stored
+ * values (use env vars there for secrets like API keys).
  */
 class Settings extends Model
 {

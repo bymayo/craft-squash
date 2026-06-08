@@ -1,5 +1,10 @@
 # Release Notes for Squash
 
+## 1.0.3 - 2026-06-08
+
+### Changed
+- Settings are now stored in Project Config instead of the database. `config/squash.php` still overrides them.
+
 ## 1.0.2 - 2026-06-05
 
 ### Added

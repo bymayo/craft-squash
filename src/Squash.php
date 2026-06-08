@@ -18,7 +18,6 @@ use craft\base\conditions\BaseCondition;
 use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
-use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\events\DefineAttributeHtmlEvent;
@@ -34,8 +33,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\Json;
-use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\log\MonologTarget;
 use craft\services\Dashboard;
 use craft\services\Gc;
@@ -60,7 +58,7 @@ use yii\base\Event;
  */
 class Squash extends Plugin
 {
-    public string $schemaVersion = '0.2.0';
+    public string $schemaVersion = '0.3.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = false;
 
@@ -105,95 +103,36 @@ class Squash extends Plugin
     }
 
     /**
-     * Settings live in our own `{{%squash_settings}}` row (NOT project config),
-     * so admins can change drivers/quality/thresholds on production without a
-     * deploy clobbering them. Per-environment overrides via `config/squash.php`
-     * win over the DB row. Same pattern as bymayo/nudge and bymayo/points.
+     * Settings are stored in Project Config (`plugins.squash.settings` in
+     * project.yaml), so they're version-controlled and sync across environments.
+     * Craft automatically overlays `config/squash.php` on top of the stored
+     * values, so per-environment overrides (and env vars for secrets) still win.
+     * Saving routes through Craft's standard `Plugins::savePluginSettings()`.
      */
     protected function createSettingsModel(): ?Model
     {
-        $model = Craft::createObject(Settings::class);
-
-        try {
-            $row = (new Query())
-                ->from('{{%squash_settings}}')
-                ->where(['id' => 1])
-                ->one();
-            if ($row && !empty($row['settings'])) {
-                $data = Json::decodeIfJson($row['settings']);
-                if (is_array($data)) {
-                    $model->setAttributes($data, false);
-                }
-            }
-        } catch (\Throwable) {
-            // Table doesn't exist yet (pre-install). Fall through with defaults.
-        }
-
-        $fileConfig = Craft::$app->getConfig()->getConfigFromFile('squash');
-        if (!empty($fileConfig)) {
-            $model->setAttributes($fileConfig, false);
-        }
-
-        return $model;
+        return Craft::createObject(Settings::class);
     }
 
     /**
-     * Intentional no-op — see the matching note in bymayo/nudge. We've opted
-     * out of Project Config for settings, so we block the default contract that
-     * would overlay stale `plugins.settings` values onto our DB-loaded model.
-     */
-    public function setSettings(array $settings): void
-    {
-        // no-op
-    }
-
-    /**
-     * Write settings directly to `{{%squash_settings}}` instead of routing
-     * through Project Config.
-     */
-    public function saveSettings(array $settings): bool
-    {
-        $model = $this->getSettings();
-        $model->setAttributes($settings, false);
-        if (!$model->validate()) {
-            return false;
-        }
-
-        $db = Craft::$app->getDb();
-        $now = (new \DateTime())->format('Y-m-d H:i:s');
-        $payload = Json::encode($model->getAttributes());
-
-        $exists = (new Query())
-            ->from('{{%squash_settings}}')
-            ->where(['id' => 1])
-            ->exists();
-
-        if ($exists) {
-            $db->createCommand()
-                ->update('{{%squash_settings}}', ['settings' => $payload, 'dateUpdated' => $now], ['id' => 1])
-                ->execute();
-        } else {
-            $db->createCommand()
-                ->insert('{{%squash_settings}}', [
-                    'id' => 1,
-                    'settings' => $payload,
-                    'dateCreated' => $now,
-                    'dateUpdated' => $now,
-                    'uid' => StringHelper::UUID(),
-                ])
-                ->execute();
-        }
-
-        return true;
-    }
-
-    /**
-     * Send Craft's built-in plugin settings route to our own settings page.
+     * Send Craft's built-in plugin settings links — both the editable and the
+     * read-only (locked project config) variants — to our own settings page,
+     * which renders read-only when admin changes are disabled.
      */
     public function getSettingsResponse(): mixed
     {
+        return $this->redirectToSettings();
+    }
+
+    public function getReadOnlySettingsResponse(): mixed
+    {
+        return $this->redirectToSettings();
+    }
+
+    private function redirectToSettings(): mixed
+    {
         return Craft::$app->getResponse()->redirect(
-            \craft\helpers\UrlHelper::cpUrl('squash/settings')
+            UrlHelper::cpUrl('squash/settings')
         );
     }
 

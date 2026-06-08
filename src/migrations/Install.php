@@ -39,22 +39,14 @@ class Install extends Migration
         // No FK to {{%assets}}: we keep the log (and backups) even if the asset
         // is later deleted, so storage can still be reclaimed and history read.
 
-        // Single-row settings table - admin-managed plugin settings live here
-        // rather than in project config, mirroring bymayo/nudge and points.
-        $this->createTable('{{%squash_settings}}', [
-            'id' => $this->primaryKey(),
-            'settings' => $this->text(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
+        // Settings are stored in Project Config (plugins.squash.settings), not in
+        // a DB table — see Squash::createSettingsModel().
 
         return true;
     }
 
     public function safeDown(): bool
     {
-        $this->dropTableIfExists('{{%squash_settings}}');
         $this->dropTableIfExists('{{%squash_log}}');
         return true;
     }

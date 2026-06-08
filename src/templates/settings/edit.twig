@@ -14,7 +14,8 @@
     }
 {% endcss %}
 
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 {% set title = 'Squash settings'|t('squash') %}
 
 {% set tabs = {
@@ -49,8 +50,18 @@
 
 {% block content %}
 
+    {% if readOnly %}
+        <div class="readable" style="margin-bottom:24px;">
+            {{ 'These settings are stored in your project config, which is read-only here because admin changes are disabled. Edit them on an environment with admin changes enabled, then deploy `project.yaml`.'|t('squash')|md }}
+        </div>
+    {% endif %}
+
     <input type="hidden" name="action" value="squash/settings/save">
     {{ redirectInput('squash/settings') }}
+
+    {# A disabled fieldset makes every contained control read-only natively when
+       project config is locked. #}
+    <fieldset {{ readOnly ? 'disabled' }} style="border:0; margin:0; padding:0; min-width:0;">
 
     {# General #}
     <div id="settings-general">
@@ -373,5 +384,7 @@
             errors: settings.getErrors('pdfQuality'),
         }) }}
     </div>
+
+    </fieldset>
 
 {% endblock %}

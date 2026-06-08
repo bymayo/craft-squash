@@ -4,9 +4,9 @@
  * Squash plugin - example config file.
  *
  * Copy this to `config/squash.php` in your Craft project. Values here override
- * whatever is saved on the CP Settings page, so you can pin per-environment
- * behaviour (e.g. only compress-on-upload in production) without depending on
- * the DB row.
+ * whatever is saved on the CP Settings page (which lives in Project Config), so
+ * you can pin per-environment behaviour (e.g. only compress-on-upload in
+ * production) and keep secrets in env vars rather than in project.yaml.
  *
  * Multi-environment config is supported via the standard Craft pattern - wrap
  * keys in `'*' => [...]`, `'production' => [...]`, etc. See:

@@ -5,6 +5,7 @@ namespace bymayo\squash\controllers;
 use bymayo\squash\Squash;
 use Craft;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 class SettingsController extends Controller
@@ -21,6 +22,9 @@ class SettingsController extends Controller
             'settings' => $plugin->getSettings(),
             'compressors' => $plugin->compressors->getAllCompressors(),
             'environment' => $plugin->compressors->getEnvironmentStatus(),
+            // Settings live in Project Config, which is read-only on environments
+            // where admin changes are disabled (typically production).
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ]);
     }
 
@@ -28,6 +32,11 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAdmin();
+
+        // Project Config can't be written when admin changes are disabled.
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException('Squash settings are stored in project config, which is read-only here. Edit them on an environment with admin changes enabled.');
+        }
 
         $request = Craft::$app->getRequest();
         $values = $request->getBodyParam('settings', []);
@@ -46,7 +55,7 @@ class SettingsController extends Controller
             : [];
 
         $plugin = Squash::getInstance();
-        if (!$plugin->saveSettings($values)) {
+        if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $values)) {
             Craft::$app->getSession()->setError(Craft::t('squash', "Couldn't save settings."));
             Craft::$app->getUrlManager()->setRouteParams([
                 'settings' => $plugin->getSettings(),
