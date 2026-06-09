@@ -1,5 +1,13 @@
 # Release Notes for Squash
 
+## 1.0.5 - 2026-06-10
+
+### Added
+- Tick rows in the report utility and use the cog **Actions** menu to **Compress selected** or **Restore selected** in bulk.
+
+### Changed
+- The report utility's bulk button now reads **Compress all uncompressed assets**, making it clear it queues every uncompressed asset regardless of the report threshold. The threshold still drives the **Needs compression** view.
+
 ## 1.0.4 - 2026-06-08
 
 ### Added

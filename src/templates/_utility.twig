@@ -37,12 +37,20 @@
         color: var(--medium-text-color, #606d7b);
         font-size: 13px;
     }
+    /* Put the search field first (it grows) so the bulk-action button sits on the right. */
+    #squash-vue-table .toolbar .flex-nowrap > .search {
+        order: -1;
+    }
+    /* The action menu items have no icons, so drop the reserved icon gutter. */
+    #squash-vue-table .menu ul.padded li a {
+        padding-left: 14px;
+    }
 {% endcss %}
 
 <div style="margin-bottom:24px;">
     <h2>{{ '{name} Assets'|t('squash', { name: settings.pluginName }) }}</h2>
     <p class="light">
-        {{ 'Squash your biggest assets to save space. Anything over {size} shows up here. Change the limit in {link}.'|t('squash', {
+        {{ 'Compress your biggest assets to save space. Anything over {size} shows up here. Change the limit in {link}.'|t('squash', {
             size: tag('strong', { text: formatter.asShortSize(threshold, 1) }),
             link: tag('a', { text: 'settings'|t('squash'), href: cpUrl('squash/settings') }),
         })|raw }}
@@ -64,14 +72,14 @@
     </div>
 </div>
 
-{% if canCompress and pendingCount %}
+{% if canCompress and compressableCount %}
     <form method="post" style="margin-bottom:16px;">
         {{ csrfInput() }}
         <input type="hidden" name="action" value="squash/compress/queue">
         <input type="hidden" name="all" value="1">
         {{ redirectInput(redirect) }}
         <button type="submit" class="btn submit">
-            {{ 'Compress {n, plural, =1{1 asset} other{# assets}} over the threshold'|t('squash', { n: pendingCount }) }}
+            {{ 'Compress all {n, plural, =1{1 uncompressed asset} other{# uncompressed assets}}'|t('squash', { n: compressableCount }) }}
         </button>
     </form>
 {% endif %}
@@ -105,12 +113,40 @@
             { name: 'actions', title: '', callback: (v) => v },
         ];
 
+        // Bulk actions on the ticked rows (selected asset IDs post as `ids`).
+        // Two or more become a dropdown menu; a single one stays a plain button.
+        const actions = [];
+        const menuActions = [];
+        {% if canCompress %}
+            menuActions.push({
+                label: Craft.t('squash', 'Compress selected'),
+                action: 'squash/compress/queue',
+                ajax: true,
+            });
+        {% endif %}
+        {% if canRestore %}
+            menuActions.push({
+                label: Craft.t('squash', 'Restore selected'),
+                action: 'squash/compress/restore',
+                ajax: true,
+            });
+        {% endif %}
+        if (menuActions.length > 1) {
+            // Cog-icon menu button, matching the native Assets index Actions menu.
+            actions.push({ label: '', icon: 'settings', actions: menuActions });
+        } else if (menuActions.length === 1) {
+            actions.push(menuActions[0]);
+        }
+
         new Craft.VueAdminTable({
             columns: columns,
             container: '#squash-vue-table',
             tableDataEndpoint: 'squash/report/{{ view }}',
             search: true,
             perPage: 50,
+            checkboxes: {{ (canCompress or canRestore) ? 'true' : 'false' }},
+            fullPane: false,
+            actions: actions,
             emptyMessage: Craft.t('squash', '{{ view == 'compressed' ? 'Nothing has been compressed yet.' : 'No assets are over the threshold.' }}'),
         });
 

@@ -28,30 +28,14 @@ class Reporter extends Component
      */
     public function reportQuery(string $view, ?string $search = null): AssetQuery
     {
-        $settings = Squash::getInstance()->getSettings();
-        $threshold = (int) $settings->reportThreshold;
-        $enabled = $settings->enabledFormats;
-
-        $compressedSub = (new Query())
-            ->select(['assetId'])
-            ->from('{{%squash_log}}')
-            ->where(['status' => CompressionResult::STATUS_COMPRESSED]);
-
-        // Filename ends with one of the enabled extensions (case-insensitive).
-        if (!empty($enabled)) {
-            $formatCond = ['or'];
-            foreach ($enabled as $format) {
-                $formatCond[] = ['like', new Expression('LOWER([[assets.filename]])'), '%.' . strtolower((string) $format), false];
-            }
-        } else {
-            $formatCond = '0=1';
-        }
+        $threshold = (int) Squash::getInstance()->getSettings()->reportThreshold;
+        $compressedSub = $this->compressedSubQuery();
 
         $pendingCond = [
             'and',
             ['>', 'assets.size', $threshold],
             ['not', ['elements.id' => $compressedSub]],
-            $formatCond,
+            $this->enabledFormatCondition(),
         ];
 
         $query = Asset::find()->orderBy(['assets.dateModified' => SORT_DESC]);
@@ -69,6 +53,49 @@ class Reporter extends Component
         }
 
         return $query;
+    }
+
+    /**
+     * Every enabled-format asset that hasn't been compressed yet, regardless of
+     * the report threshold. Backs the "Compress all" bulk action.
+     */
+    public function compressableQuery(): AssetQuery
+    {
+        return Asset::find()
+            ->orderBy(['assets.dateModified' => SORT_DESC])
+            ->andWhere(['not', ['elements.id' => $this->compressedSubQuery()]])
+            ->andWhere($this->enabledFormatCondition());
+    }
+
+    /**
+     * Sub-query of asset IDs that already have a compressed log row.
+     */
+    private function compressedSubQuery(): Query
+    {
+        return (new Query())
+            ->select(['assetId'])
+            ->from('{{%squash_log}}')
+            ->where(['status' => CompressionResult::STATUS_COMPRESSED]);
+    }
+
+    /**
+     * Condition matching filenames ending with one of the enabled extensions
+     * (case-insensitive), or a never-true condition when none are enabled.
+     *
+     * @return array|string
+     */
+    private function enabledFormatCondition(): array|string
+    {
+        $enabled = Squash::getInstance()->getSettings()->enabledFormats;
+        if (empty($enabled)) {
+            return '0=1';
+        }
+
+        $cond = ['or'];
+        foreach ($enabled as $format) {
+            $cond[] = ['like', new Expression('LOWER([[assets.filename]])'), '%.' . strtolower((string) $format), false];
+        }
+        return $cond;
     }
 
     /**

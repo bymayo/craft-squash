@@ -91,7 +91,7 @@ In the **Assets** index, select one or more assets and choose **Compress file** 
 
 ### Via utility
 
-Open **Utilities → Squash Assets**, switch to **Needs compression**, and either **Compress** an individual asset or **Compress all assets over the threshold** in one go.
+Open **Utilities → Squash Assets**, switch to **Needs compression**, and either **Compress** an individual asset, tick several rows and use the cog **Actions** menu to **Compress selected** or **Restore selected**, or **Compress all** uncompressed assets in one go (this ignores the report threshold and queues every asset that still needs compressing).
 
 ## Dashboard widget
 

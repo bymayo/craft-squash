@@ -44,6 +44,7 @@ class SquashReport extends Utility
         // here we just need the tab counts and the headline stats.
         $pendingCount = (int) $reporter->reportQuery('pending')->count();
         $compressedCount = (int) $reporter->reportQuery('compressed')->count();
+        $compressableCount = (int) $reporter->compressableQuery()->count();
 
         return Craft::$app->getView()->renderTemplate('squash/_utility', [
             'plugin' => $plugin,
@@ -52,6 +53,7 @@ class SquashReport extends Utility
             'allCount' => $pendingCount + $compressedCount,
             'pendingCount' => $pendingCount,
             'compressedCount' => $compressedCount,
+            'compressableCount' => $compressableCount,
             'stats' => $reporter->getStats(),
             'threshold' => $settings->reportThreshold,
             'canCompress' => Craft::$app->getUser()->checkPermission('squash-compressAssets'),

@@ -16,8 +16,8 @@ use yii\web\Response;
 class CompressController extends Controller
 {
     /**
-     * Queue compression for posted asset IDs, or for everything currently over
-     * the report threshold when `all` is set.
+     * Queue compression for posted asset IDs, or for every uncompressed asset
+     * (regardless of threshold) when `all` is set.
      */
     public function actionQueue(): Response
     {
@@ -31,11 +31,15 @@ class CompressController extends Controller
         $alreadyCompressed = 0;
 
         if ($request->getBodyParam('all')) {
-            // Everything over the threshold that still needs compressing.
-            $ids = Squash::getInstance()->reporter->reportQuery('pending')->ids();
+            // Every enabled-format asset that still needs compressing, threshold aside.
+            $ids = Squash::getInstance()->reporter->compressableQuery()->ids();
         } else {
-            // Accept either a list (`assetIds`) or a single `assetId` (action menu).
-            $ids = (array) $request->getBodyParam('assetIds', []);
+            // Accept a list (`assetIds`), the report table's ticked rows (`ids`),
+            // or a single `assetId` (action menu).
+            $ids = array_merge(
+                (array) $request->getBodyParam('assetIds', []),
+                (array) $request->getBodyParam('ids', []),
+            );
             if ($single = $request->getBodyParam('assetId')) {
                 $ids[] = $single;
             }
@@ -72,20 +76,38 @@ class CompressController extends Controller
     }
 
     /**
-     * Restore a single asset from its backup (inline).
+     * Restore assets from their backups: a single asset inline (`assetId`) or the
+     * report table's ticked rows in bulk (`ids`).
      */
     public function actionRestore(): Response
     {
         $this->requirePostRequest();
         $this->requirePermission('squash-restoreAssets');
 
-        $assetId = (int) Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $asset = Asset::find()->id($assetId)->one();
+        $request = Craft::$app->getRequest();
+        $squasher = Squash::getInstance()->squasher;
+        $userId = Craft::$app->getUser()->getId();
 
-        if ($asset && Squash::getInstance()->squasher->restore($asset, Craft::$app->getUser()->getId())) {
-            return $this->asSuccess(Craft::t('squash', 'Original restored.'));
+        $ids = (array) $request->getBodyParam('ids', []);
+        if ($single = $request->getBodyParam('assetId')) {
+            $ids[] = $single;
+        }
+        $ids = array_unique(array_filter(array_map('intval', $ids)));
+
+        $restored = 0;
+        foreach ($ids as $id) {
+            $asset = Asset::find()->id($id)->one();
+            if ($asset && $squasher->restore($asset, $userId)) {
+                $restored++;
+            }
         }
 
-        return $this->asFailure(Craft::t('squash', 'No backup available to restore.'));
+        if ($restored === 0) {
+            return $this->asFailure(Craft::t('squash', 'No backups available to restore.'));
+        }
+
+        return $this->asSuccess(Craft::t('squash', '{n, plural, =1{1 original} other{# originals}} restored.', [
+            'n' => $restored,
+        ]));
     }
 }
